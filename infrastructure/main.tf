@@ -60,6 +60,12 @@ data "archive_file" "lambda_zip" {
   output_path = "${path.module}/../backend/lambda_function.zip"
 }
 
+# Explicit Log Group (Controls retention and ensures tagging)
+resource "aws_cloudwatch_log_group" "lambda_logs" {
+  name              = "/aws/lambda/${aws_lambda_function.chatbot_logic.function_name}"
+  retention_in_days = 7
+}
+
 # IAM Role for Lambda
 resource "aws_iam_role" "lambda_role" {
   name = "swiftline_lambda_role"
@@ -104,6 +110,17 @@ resource "aws_lambda_function" "chatbot_logic" {
   source_code_hash = data.archive_file.lambda_zip.output_base64sha256
   runtime          = "python3.9"
   timeout          = 10
+
+  # Lambda to enable X-Ray tracing
+  tracing_config {
+    mode = "Active"
+  }
+}
+
+# IAM Role for X-Ray
+resource "aws_iam_role_policy_attachment" "lambda_xray" {
+  role       = aws_iam_role.lambda_role.name
+  policy_arn = "arn:aws:iam::aws:policy/AWSXRayDaemonWriteAccess"
 }
 
 # ==============================================================================
@@ -135,9 +152,14 @@ resource "aws_cloudformation_stack" "lex_bot" {
   parameters = {
     LambdaArn  = aws_lambda_function.chatbot_logic.arn
     LexRoleArn = aws_iam_role.lex_role.arn
+    AssessmentTag = "SolutionsEngineer-LarryAdah"
   }
 
   template_body = file("${path.module}/lex_bot_template.yaml")
+
+  tags = {
+    Assessment = "SolutionsEngineer-LarryAdah"
+  }
 }
 
 # Allow Lex to Invoke Lambda

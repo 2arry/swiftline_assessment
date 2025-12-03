@@ -13,7 +13,7 @@ table = dynamodb.Table("SwiftLineOrders")
 def lambda_handler(event, context):
     logger.info(f"Received event: {json.dumps(event)}")
     
-    # Lex V2 structure is nested
+    # Parse Input from Lex V2 because Lex V2 structure is nested
     session_state = event.get("sessionState", {})
     intent = session_state.get("intent", {})
     slots = intent.get("slots", {})
@@ -37,11 +37,37 @@ def lambda_handler(event, context):
         
     # Format Response
     item = response["Item"]
+
+    # Safe Extraction to handle missing keys
+    cust = item.get("customer", {})
+    dlv = item.get("delivery", {})
+    details = item.get("orderDetails", {})
+    items_list = details.get("items", [])
+    
+    # Build Items String
+    items_str = ""
+    for prod in items_list:
+        qty = int(prod.get("quantity", 1)) 
+        items_str += f"- {qty}x {prod.get('name')} (Vendor: {prod.get('vendor')})\n"
+
+    # Construct the final formatted message
     msg_text = (
-        f"Order Found!\n"
-        f"Status: {item['delivery']['status']}\n"
-        f"Estimated: {item['delivery']['estimatedDate']}\n"
-        f"Carrier: {item['delivery']['carrier']}"
+        f"Order Status: {dlv.get('status', 'Unknown')}\n"
+        f"--------------------------------\n"
+        f"Tracking ID: {item.get('trackingId')}\n\n"
+        f"Order Date: {item.get('orderDate')}\n"
+
+        f"Order Details\n"
+        f"{items_str}\n"
+        
+        f"Customer Details\n"
+        f"Name: {cust.get('name')}\n"
+        f"Phone: {cust.get('phone')}\n"
+        f"Email: {cust.get('email')}\n\n"
+        
+        f"Delivery Information\n"
+        f"Carrier: {dlv.get('carrier')}\n"
+        f"ETA: {dlv.get('estimatedDate')}"
     )
     
     return close_lex(intent["name"], "Fulfilled", msg_text)

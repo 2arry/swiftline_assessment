@@ -9,3 +9,6 @@ infrastructure/.terraform.tfstate.lock.info
 
 # Crash log files
 crash.log
+
+# Lambda deployment packages
+backend/*.zip

@@ -8,9 +8,12 @@ Parameters:
     Type: String
   LexRoleArn:
     Type: String
+  AssessmentTag:
+    Type: String
+    Default: "SolutionsEngineer-Candidate"
 
 Resources:
-  # 1. The Bot
+  # The Bot
   SwiftLineBot:
     Type: AWS::Lex::Bot
     Properties:
@@ -21,10 +24,14 @@ Resources:
         ChildDirected: false
       IdleSessionTTLInSeconds: 300
       
-      # FIX 1: This ensures you don't have to click "Build" manually
       AutoBuildBotLocales: true
       
-      # FIX 2: This connects the Lambda to the "Test" button (Draft Version)
+      BotTags:
+        - Key: Assessment
+          Value: 
+            Ref: AssessmentTag
+      
+      # This connects the Lambda to the "Test" button (Draft Version)
       TestBotAliasSettings:
         BotAliasLocaleSettings:
           - LocaleId: en_US
@@ -59,7 +66,6 @@ Resources:
                             PlainTextMessage:
                               Value: "Please enter your Tracking ID (e.g. SWL-2024...)"
 
-              # FIX 3: SlotPriorities must be a sibling to Slots (CloudFormation requirement)
               SlotPriorities:
                 - Priority: 1
                   SlotName: TrackingID
@@ -69,8 +75,15 @@ Resources:
             
             - Name: FallbackIntent
               ParentIntentSignature: AMAZON.FallbackIntent
+              IntentClosingSetting:
+                IsActive: true
+                ClosingResponse:
+                  MessageGroupsList:
+                    - Message:
+                        PlainTextMessage:
+                          Value: "I'm sorry, I didn't understand that. Please provide a valid SwiftLine tracking number (e.g., SWL-2024...)."
 
-  # 2. The Bot Version
+  # The Bot Version
   BotVersion:
     Type: AWS::Lex::BotVersion
     Properties:
@@ -81,7 +94,7 @@ Resources:
           BotVersionLocaleDetails:
             SourceBotVersion: DRAFT
 
-  # 3. The Production Alias
+  # The Production Alias
   BotAlias:
     Type: AWS::Lex::BotAlias
     Properties:
@@ -90,6 +103,10 @@ Resources:
       BotVersion: 
         Fn::GetAtt: [BotVersion, BotVersion]
       BotAliasName: ProductionAlias
+      BotAliasTags:
+        - Key: Assessment
+          Value: 
+            Ref: AssessmentTag
       BotAliasLocaleSettings:
         - LocaleId: en_US
           BotAliasLocaleSetting:
