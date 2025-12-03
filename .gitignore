@@ -1,0 +1,11 @@
+# Copyright (c) 2025, Assessment: SolutionsEngineer-LarryAdah
+
+# Terraform generated files
+infrastructure/.terraform/
+infrastructure/*.tfstate
+infrastructure/*.tfstate.*
+infrastructure/*.plan
+infrastructure/.terraform.tfstate.lock.info
+
+# Crash log files
+crash.log

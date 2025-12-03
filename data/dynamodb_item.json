@@ -1,0 +1,13 @@
+{
+  "trackingId": {"S": "SWL-2024-AIR-001234"},
+  "orderDate": {"S": "2024-11-15"},
+  "customer": {"M": {
+    "name": {"S": "John Doe"},
+    "email": {"S": "john@example.com"}
+  }},
+  "delivery": {"M": {
+    "status": {"S": "In Transit"},
+    "carrier": {"S": "SwiftAir Express"},
+    "estimatedDate": {"S": "2024-11-20"}
+  }}
+}

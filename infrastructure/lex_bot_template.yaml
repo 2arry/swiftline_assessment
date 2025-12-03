@@ -1,0 +1,109 @@
+# Copyright (c) 2025, Assessment: SolutionsEngineer-LarryAdah
+
+AWSTemplateFormatVersion: '2010-09-09'
+Description: Lex V2 Bot Stack
+
+Parameters:
+  LambdaArn:
+    Type: String
+  LexRoleArn:
+    Type: String
+
+Resources:
+  # 1. The Bot
+  SwiftLineBot:
+    Type: AWS::Lex::Bot
+    Properties:
+      Name: SwiftLineBot
+      RoleArn: 
+        Ref: LexRoleArn
+      DataPrivacy:
+        ChildDirected: false
+      IdleSessionTTLInSeconds: 300
+      
+      # FIX 1: This ensures you don't have to click "Build" manually
+      AutoBuildBotLocales: true
+      
+      # FIX 2: This connects the Lambda to the "Test" button (Draft Version)
+      TestBotAliasSettings:
+        BotAliasLocaleSettings:
+          - LocaleId: en_US
+            BotAliasLocaleSetting:
+              Enabled: true
+              CodeHookSpecification:
+                LambdaCodeHook:
+                  CodeHookInterfaceVersion: "1.0"
+                  LambdaArn: 
+                    Ref: LambdaArn
+
+      BotLocales:
+        - LocaleId: en_US
+          NluConfidenceThreshold: 0.40
+          Intents:
+            - Name: CheckOrderStatus
+              SampleUtterances:
+                - Utterance: "Where is my order"
+                - Utterance: "Track package {TrackingID}"
+                - Utterance: "Status for {TrackingID}"
+              
+              # Define Slots
+              Slots:
+                - Name: TrackingID
+                  SlotTypeName: AMAZON.AlphaNumeric
+                  ValueElicitationSetting:
+                    SlotConstraint: Required
+                    PromptSpecification:
+                      MaxRetries: 2
+                      MessageGroupsList:
+                        - Message:
+                            PlainTextMessage:
+                              Value: "Please enter your Tracking ID (e.g. SWL-2024...)"
+
+              # FIX 3: SlotPriorities must be a sibling to Slots (CloudFormation requirement)
+              SlotPriorities:
+                - Priority: 1
+                  SlotName: TrackingID
+
+              FulfillmentCodeHook:
+                Enabled: true
+            
+            - Name: FallbackIntent
+              ParentIntentSignature: AMAZON.FallbackIntent
+
+  # 2. The Bot Version
+  BotVersion:
+    Type: AWS::Lex::BotVersion
+    Properties:
+      BotId: 
+        Ref: SwiftLineBot
+      BotVersionLocaleSpecification:
+        - LocaleId: en_US
+          BotVersionLocaleDetails:
+            SourceBotVersion: DRAFT
+
+  # 3. The Production Alias
+  BotAlias:
+    Type: AWS::Lex::BotAlias
+    Properties:
+      BotId: 
+        Ref: SwiftLineBot
+      BotVersion: 
+        Fn::GetAtt: [BotVersion, BotVersion]
+      BotAliasName: ProductionAlias
+      BotAliasLocaleSettings:
+        - LocaleId: en_US
+          BotAliasLocaleSetting:
+            Enabled: true
+            CodeHookSpecification:
+              LambdaCodeHook:
+                CodeHookInterfaceVersion: "1.0"
+                LambdaArn: 
+                  Ref: LambdaArn
+
+Outputs:
+  BotId:
+    Value: 
+      Ref: SwiftLineBot
+  BotAliasId:
+    Value: 
+      Fn::GetAtt: [BotAlias, BotAliasId]
