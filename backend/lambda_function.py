@@ -1,4 +1,4 @@
-# Copyright (c) 2025, Assessment: SolutionsEngineer-LarryAdah
+# Copyright (c) 2025, Assessment: SolutionsEngineer-candidate-larry
 
 import json
 import boto3
@@ -8,7 +8,7 @@ logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 
 dynamodb = boto3.resource("dynamodb")
-table = dynamodb.Table("SwiftLineOrders")
+table = dynamodb.Table("SwiftLineOrdersLarry")
 
 def lambda_handler(event, context):
     logger.info(f"Received event: {json.dumps(event)}")

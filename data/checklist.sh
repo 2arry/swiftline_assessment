@@ -1,4 +1,4 @@
-# Copyright (c) 2025, Assessment: SolutionsEngineer-LarryAdah
+# Copyright (c) 2025, Assessment: SolutionsEngineer-candidate-larry
 
 # terraform destroy -auto-approve
 # terraform apply -auto-approve
@@ -30,4 +30,7 @@
 # rm -rf .git
 
 # To push changes to GitHub
-# git add -A && git commit -m "Cleaning up code" && git push
+# git add -A && git commit -m "OIDC Test" && git push
+
+# To initialize Terraform with migration of state
+# AWS_PROFILE=larry terraform init -migrate-state

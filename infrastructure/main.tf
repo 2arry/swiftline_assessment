@@ -1,4 +1,4 @@
-# Copyright (c) 2025, Assessment: SolutionsEngineer-LarryAdah
+# Copyright (c) 2025, Assessment: SolutionsEngineer-candidate-larry
 
 terraform {
   required_providers {
@@ -13,15 +13,19 @@ terraform {
       source = "hashicorp/random"
     }
   }
+  backend "s3" {
+    bucket = "swiftline-tfstate-candidate-larry" # Must match the bucket created
+    key    = "swiftline/terraform.tfstate"
+    region = "us-east-1" # Must match the region where the bucket is created
+  }
 }
 
 provider "aws" {
-  profile = "larry"
-  region = "us-east-1"
+  region = var.region_code
   
   default_tags {
     tags = {
-      Assessment = "SolutionsEngineer-LarryAdah"
+      Assessment = var.tag_value
     }
   }
 }
@@ -30,10 +34,38 @@ data "aws_caller_identity" "current" {}
 data "aws_region" "current" {}
 
 # ==============================================================================
+# 0. VARIABLES
+# ==============================================================================
+variable "dynamodb_table_name" {
+  type    = string
+  default = "SwiftLineOrdersLarry"
+}
+
+variable "region_code" {
+  type    = string
+  default = "us-east-1"
+}
+
+variable "tag_value" {
+  type    = string
+  default = "SolutionsEngineer-candidate-larry"
+}
+
+variable "lambda_function_name" {
+  type = string
+  default = "SwiftLineOrderCheckLarry"
+}
+
+variable "cloudformation_stack_name" {
+  type = string
+  default = "SwiftLineLexStackLarry"
+}
+
+# ==============================================================================
 # 1. DYNAMODB TABLE & DATA
 # ==============================================================================
 resource "aws_dynamodb_table" "orders" {
-  name           = "SwiftLineOrders"
+  name           = var.dynamodb_table_name
   billing_mode   = "PAY_PER_REQUEST"
   hash_key       = "trackingId"
 
@@ -68,7 +100,7 @@ resource "aws_cloudwatch_log_group" "lambda_logs" {
 
 # IAM Role for Lambda
 resource "aws_iam_role" "lambda_role" {
-  name = "swiftline_lambda_role"
+  name = "swiftline_lambda_role_larry"
 
   assume_role_policy = jsonencode({
     Version = "2012-10-17"
@@ -82,7 +114,7 @@ resource "aws_iam_role" "lambda_role" {
 
 # IAM Policy (Logs + DynamoDB Read)
 resource "aws_iam_role_policy" "lambda_policy" {
-  name = "swiftline_lambda_policy"
+  name = "swiftline_lambda_policy_larry"
   role = aws_iam_role.lambda_role.id
 
   policy = jsonencode({
@@ -104,7 +136,7 @@ resource "aws_iam_role_policy" "lambda_policy" {
 
 resource "aws_lambda_function" "chatbot_logic" {
   filename         = data.archive_file.lambda_zip.output_path
-  function_name    = "SwiftLineOrderCheck"
+  function_name    = var.lambda_function_name
   role             = aws_iam_role.lambda_role.arn
   handler          = "lambda_function.lambda_handler"
   source_code_hash = data.archive_file.lambda_zip.output_base64sha256
@@ -128,7 +160,7 @@ resource "aws_iam_role_policy_attachment" "lambda_xray" {
 # ==============================================================================
 # IAM Role for Lex Service
 resource "aws_iam_role" "lex_role" {
-  name = "swiftline_lex_role"
+  name = "swiftline_lex_role_larry"
 
   assume_role_policy = jsonencode({
     Version = "2012-10-17"
@@ -146,19 +178,19 @@ resource "aws_iam_role_policy_attachment" "lex_policy_attach" {
 }
 
 resource "aws_cloudformation_stack" "lex_bot" {
-  name = "SwiftLineLexStack"
+  name = var.cloudformation_stack_name
 
   # We pass the Lambda ARN and Role ARN into the CF template
   parameters = {
     LambdaArn  = aws_lambda_function.chatbot_logic.arn
     LexRoleArn = aws_iam_role.lex_role.arn
-    AssessmentTag = "SolutionsEngineer-LarryAdah"
+    AssessmentTag = var.tag_value
   }
 
   template_body = file("${path.module}/lex_bot_template.yaml")
 
   tags = {
-    Assessment = "SolutionsEngineer-LarryAdah"
+    Assessment = var.tag_value
   }
 }
 
@@ -190,7 +222,7 @@ resource "random_id" "bucket_suffix" {
 }
 
 resource "aws_s3_bucket" "frontend" {
-  bucket = "swiftline-chatbot-ui-${random_id.bucket_suffix.hex}"
+  bucket = "swiftline-chatbot-ui-${random_id.bucket_suffix.hex}-larry"
 }
 
 resource "aws_s3_bucket_website_configuration" "frontend_config" {

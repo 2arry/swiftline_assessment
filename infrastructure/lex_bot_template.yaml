@@ -1,4 +1,4 @@
-# Copyright (c) 2025, Assessment: SolutionsEngineer-LarryAdah
+# Copyright (c) 2025, Assessment: SolutionsEngineer-candidate-larry
 
 AWSTemplateFormatVersion: '2010-09-09'
 Description: Lex V2 Bot Stack
@@ -10,14 +10,15 @@ Parameters:
     Type: String
   AssessmentTag:
     Type: String
-    Default: "SolutionsEngineer-Candidate"
+    Default: "SolutionsEngineer-candidate-larry"
 
 Resources:
   # The Bot
-  SwiftLineBot:
+  SwiftLineBotLarry:
     Type: AWS::Lex::Bot
     Properties:
-      Name: SwiftLineBot
+      Name: SwiftLineBotLarry
+      Description: "A chatbot to help customers check their SwiftLine order status."
       RoleArn: 
         Ref: LexRoleArn
       DataPrivacy:
@@ -88,7 +89,7 @@ Resources:
     Type: AWS::Lex::BotVersion
     Properties:
       BotId: 
-        Ref: SwiftLineBot
+        Ref: SwiftLineBotLarry
       BotVersionLocaleSpecification:
         - LocaleId: en_US
           BotVersionLocaleDetails:
@@ -99,7 +100,7 @@ Resources:
     Type: AWS::Lex::BotAlias
     Properties:
       BotId: 
-        Ref: SwiftLineBot
+        Ref: SwiftLineBotLarry
       BotVersion: 
         Fn::GetAtt: [BotVersion, BotVersion]
       BotAliasName: ProductionAlias
@@ -120,7 +121,7 @@ Resources:
 Outputs:
   BotId:
     Value: 
-      Ref: SwiftLineBot
+      Ref: SwiftLineBotLarry
   BotAliasId:
     Value: 
       Fn::GetAtt: [BotAlias, BotAliasId]
