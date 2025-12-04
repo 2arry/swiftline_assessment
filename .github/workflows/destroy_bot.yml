@@ -1,21 +1,23 @@
 # Copyright (c) 2025, Assessment: SolutionsEngineer-candidate-larry
 
-name: Deploy ChatBot Infrastructure
+name: Destroy ChatBot Infrastructure
 
 on:
-  push:
-    branches: [ "main" ]
-    paths:
-      - 'infrastructure/**'
   workflow_dispatch:
+    inputs:
+      confirm:
+        description: "Type DESTROY to confirm"
+        required: true
+        type: string
 
 permissions:
   id-token: write
   contents: read
 
 jobs:
-  terraform:
-    name: "Terraform Apply"
+  terraform-destroy:
+    name: "Terraform Destroy"
+    if: ${{ github.event.inputs.confirm == 'DESTROY' }}
     runs-on: ubuntu-latest
     environment: Draft
     env:
@@ -43,9 +45,5 @@ jobs:
       - name: Terraform Validate
         run: terraform validate
 
-      - name: Terraform Apply
-        run: terraform apply -auto-approve -var="region_code=${{ env.AWS_REGION }}"
-
-      - name: Publish Terraform Outputs
-        run: ./workflow_summary.sh
-        shell: bash
+      - name: Terraform Destroy
+        run: terraform destroy -auto-approve -var="region_code=${{ env.AWS_REGION }}"
