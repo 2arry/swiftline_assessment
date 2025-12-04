@@ -14,3 +14,4 @@ echo "bot_alias_id = $BOT_ALIAS_ID" >> $GITHUB_STEP_SUMMARY
 echo '```' >> $GITHUB_STEP_SUMMARY
 URL=$(terraform output -raw https_url)
 echo "**[Click to Open Chatbot]($URL)**" >> $GITHUB_STEP_SUMMARY
+
