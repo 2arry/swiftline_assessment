@@ -52,12 +52,12 @@ Terraform requires an S3 bucket to store its state file ("memory"). Terraform ca
 
 1.  Login to you AWS Account.
 2.  Go to S3 dashboard.
-3.  Select any region of your choice. I am using the `ca-central-1` Region *(and not `us-east-1` because it was shown to ne used by almost half the internet in October 20, 2025)*
-3.  Create the state bucket in `ca-central-1` (or any region of your choice) (ensure the name is unique):
+3.  Select any region of your choice. I am using the `ca-central-1` Region *(and not `us-east-1` because it was shown to be used by almost half the internet in October 20, 2025 during the outage)*
+4.  Create the state bucket in `ca-central-1` (or any region of your choice) (ensure the name is unique):
     ```bash
-    aws s3 mb s3://swiftline-tfstate-candidate-larry --region us-east-1
+    swiftline-tfstate-candidate-larry
     ```
-3.  *Note:* Ensure the bucket name matches the `backend "s3"` configuration in `infrastructure/main.tf`.
+3.  *Note:* Ensure the bucket name and region matches the `backend "s3"` configuration in `infrastructure/main.tf`.
 
 ---
 
