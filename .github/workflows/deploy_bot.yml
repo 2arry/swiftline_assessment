@@ -47,5 +47,7 @@ jobs:
         run: terraform apply -auto-approve -var="region_code=${{ env.AWS_REGION }}"
 
       - name: Publish Terraform Outputs
-        run: ./workflow_summary.sh
+        run: |
+          chmod +x ./workflow_summary.sh
+          ./workflow_summary.sh
         shell: bash
