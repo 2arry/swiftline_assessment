@@ -4,12 +4,12 @@ name: Deploy ChatBot Infrastructure
 
 on:
   push:
-    branches: [ "main" ]
-    paths:
-      - "infrastructure/**"
-      - "backend/**"
-      - "frontend/**"
-      - "data/**"
+    # branches: [ "main" ]
+    # paths:
+    #   - "infrastructure/**"
+    #   - "backend/**"
+    #   - "frontend/**"
+    #   - "data/**"
   workflow_dispatch:
 
 permissions:
