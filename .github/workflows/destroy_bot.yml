@@ -42,8 +42,5 @@ jobs:
       - name: Terraform Init
         run: terraform init
 
-      - name: Terraform Validate
-        run: terraform validate
-
       - name: Terraform Destroy
         run: terraform destroy -auto-approve -var="region_code=${{ env.AWS_REGION }}"
