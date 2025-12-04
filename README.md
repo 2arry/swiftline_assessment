@@ -77,9 +77,9 @@ To secure the CI/CD pipeline, we use **OpenID Connect (OIDC)** instead of long-l
 3.  Select the Provider you just created.
 4.  **GitHub Organization**: Your GitHub Username.
 5.  **GitHub Repository**: `swiftline-assessment` (or your exact repo name).
-6.  **Branch**: Select "Any" or input `main`.
+6.  **Branch**: Select "Any" or input `main` *(In my case I used enviroment instead of branch)*.
 7.  Attach the **AdministratorAccess** policy (or a custom scoped policy for Terraform).
-8.  Name the role: `GitHubActions-DeployRole`.
+8.  Name the role: `terraform-candidate-larry` *(use any name of your choice)*.
 
 ### C. Verify Trust Policy
 Ensure the role's **Trust Relationship** looks like this:
@@ -95,10 +95,80 @@ Ensure the role's **Trust Relationship** looks like this:
             "Action": "sts:AssumeRoleWithWebIdentity",
             "Condition": {
                 "StringLike": {
-                    "token.actions.githubusercontent.com:sub": "repo:<YOUR_GITHUB_USER>/<YOUR_REPO_NAME>:*"
+                    "token.actions.githubusercontent.com:sub": [
+                        "repo:<YOUR_GITHUB_USER>/<YOUR_REPO_NAME>:*"
+                        "repo:<YOUR_GITHUB_USER>/<YOUR_REPO_NAME>:environment:<YOUR_REPO_ENVIRONMENT_NAME>"
+                    ]
                 }
             }
         }
     ]
 }
 ```
+---
+Mine looks like this:
+
+```json
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Effect": "Allow",
+            "Principal": {
+                "Federated": "arn:aws:iam::<YOUR_ACCOUNT_ID>:oidc-provider/token.actions.githubusercontent.com"
+            },
+            "Action": "sts:AssumeRoleWithWebIdentity",
+            "Condition": {
+                "StringLike": {
+                    "token.actions.githubusercontent.com:sub": [
+                        "repo:2arry/swiftline_assessment:environment:Draft"
+                    ]
+                }
+            }
+        }
+    ]
+}
+```
+
+## Step 3: Configure GitHub Secrets
+1.  Navigate to your GitHub Repository.
+2.  Click **Settings** > **Environments** > **New Environment** then select **Add environment secret**
+3.  Optionally you can click **Settings** > **Secrets and variables** > **Actions**, then select **New repository secret**.
+4.  Add the following secrets:
+    * **Name**: `AWS_ROLE_ARN`
+        * **Value**: `arn:aws:iam::<YOUR_ACCOUNT_ID>:role/GitHubActions-DeployRole`
+
+## Step 4: Confirm Namings in Files
+1.  Open `infrastructure/main.tf`.
+2.  Ensure the `s3` backend configuration matches the bucket name and region you created in **Step 1**.
+3.  Open `.github/workflows/deploy_bot.yml`.
+4.  Ensure the `environment` name is set to the environment name from **Step 3**.
+5.  Ensure the `AWS_REGION` name is set to the region from **Step 1**.
+6.  Open `.github/workflows/destroy_bot.yml`
+5.  Ensure the `AWS_REGION` name is set to the region from **Step 1**.
+
+## Step 5: Deploy the Solution
+The deployment is fully automated via GitHub Actions.
+
+1.  **Commit and Push** your code to the `main` branch.
+2.  Go to the **Actions** tab in your repository.
+3.  Select the workflow **"Deploy ChatBot Infrastructure"**.
+4.  Watch the steps execute:
+    * Terraform Init (Connects to S3 Backend).
+    * Terraform Plan & Apply.
+    * **Outputs**: At the end of the run, the **HTTPS URL** for the chatbot will be displayed in the Job Summary.
+
+## Step 6: Verification
+1.  Click the HTTPS URL from the deployment output.
+2.  The chat interface should load.
+3.  Test with the sample tracking number: `SWL-2024-AIR-001234` with instructions to test the bot.
+
+---
+
+## Tear Down (Clean Up)
+To destroy all resources and stop billing:
+
+1.  Go to the **Actions** tab.
+2.  Select the **Destroy ChatBot Infrastructure** workflow.
+3.  Click **Run workflow**.
+4.  **Manual Step**: Delete the Terraform State S3 bucket via the AWS Console (Terraform cannot delete its own brain).

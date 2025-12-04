@@ -13,4 +13,4 @@ crash.log
 # Lambda deployment packages
 backend/*.zip
 
-data/*.sh
+data/checklist.sh
