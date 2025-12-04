@@ -6,7 +6,10 @@ on:
   push:
     branches: [ "main" ]
     paths:
-      - 'infrastructure/**'
+      - "infrastructure/**"
+      - "backend/**"
+      - "frontend/**"
+      - "data/**"
   workflow_dispatch:
 
 permissions:
@@ -31,7 +34,7 @@ jobs:
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v3
         with:
-          role-to-assume: ${{ secrets.LARRY }}
+          role-to-assume: ${{ secrets.ASSESSMENT }}
           aws-region: ${{ env.AWS_REGION }}
 
       - name: Setup Terraform

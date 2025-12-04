@@ -14,7 +14,7 @@ terraform {
     }
   }
   backend "s3" {
-    bucket = "swiftline-tfstate-candidate-larry-1" # Must match the bucket created
+    bucket = "swiftline-tfstate-candidate-larry" # Must match the bucket created
     key    = "swiftline/terraform.tfstate"
     region = "ca-central-1" # Must match the region where the bucket is created
   }
