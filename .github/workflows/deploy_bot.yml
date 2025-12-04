@@ -43,3 +43,12 @@ jobs:
 
       - name: Terraform Apply
         run: terraform apply -auto-approve -var="region_code=${{ env.AWS_REGION }}"
+
+      - name: Publish Terraform Outputs
+        run: |
+          echo "## Deployment Successful!" >> $GITHUB_STEP_SUMMARY
+          echo "Here are your infrastructure details:" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo '```terraform' >> $GITHUB_STEP_SUMMARY
+          terraform output >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
