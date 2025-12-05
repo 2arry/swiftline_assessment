@@ -261,6 +261,14 @@ resource "aws_s3_object" "html" {
   content_type = "text/html"
 }
 
+# Upload the Architecture Diagram to S3
+resource "aws_s3_object" "diagram" {
+  bucket       = aws_s3_bucket.frontend.id
+  key          = "architectural-diagram-candidate-larry.png"
+  source       = "${path.module}/../frontend/architectural-diagram-candidate-larry.png"
+  content_type = "image/png"
+}
+
 # ==============================================================================
 # 6. CLOUDFRONT (CDN for HTTPS)
 # ==============================================================================
